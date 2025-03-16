@@ -60,9 +60,18 @@
       "destination": "ВЫХОДНОЙ",
       "volume": "ВЫХОДНОЙ",
       "status": "pending"
+    },
+    {
+      "id": 8,
+      "day": "Понедельник",
+      "date": "24.03.2025",
+      "destination": "ыва",
+      "volume": "ыва",
+      "status": "pending",
+      "week": "next"
     }
   ],
-  "next_id": 8,
+  "next_id": 9,
   "next_note_id": 2,
   "notes": [
     {

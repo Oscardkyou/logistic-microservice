@@ -31,7 +31,7 @@
    ```
    python app.py
    ```
-4. Откройте в браузере http://localhost:8082
+4. Откройте в браузере http://localhost:8888
 
 ## Развертывание на сервере (shopnclick.kz)
 
@@ -49,7 +49,7 @@ server {
     server_name shopnclick.kz www.shopnclick.kz;
 
     location / {
-        proxy_pass http://127.0.0.1:8082;
+        proxy_pass http://127.0.0.1:8888;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
     }
@@ -91,7 +91,7 @@ sudo certbot --nginx -d shopnclick.kz -d www.shopnclick.kz
    [Service]
    User=your_username
    WorkingDirectory=/path/to/your/app
-   ExecStart=/path/to/your/venv/bin/gunicorn -w 4 -b 127.0.0.1:8082 app:app
+   ExecStart=/path/to/your/venv/bin/gunicorn -w 4 -b 127.0.0.1:8888 app:app
    Restart=always
 
    [Install]
@@ -130,7 +130,7 @@ cd logistic-microservice
 docker-compose up -d
 ```
 
-Приложение будет доступно по адресу http://your-server-ip:8080/
+Приложение будет доступно по адресу http://your-server-ip:8888/
 
 #### Полезные команды Docker Compose
 
@@ -152,10 +152,10 @@ docker-compose up -d --build
 #### Дополнительная информация
 
 Создаются два контейнера:
-- `logistics-app` - сам веб-сервер на Flask/Gunicorn (порт 8082)
-- `logistics-nginx` - Nginx для проксирования запросов и кеширования статических файлов (порт 8080)
+- `logistics-app` - сам веб-сервер на Flask/Gunicorn (порт 8888)
+- `logistics-nginx` - Nginx для проксирования запросов и кеширования статических файлов (порт 8888)
 
-3. Приложение будет доступно по адресу http://your-server-ip:8080/
+3. Приложение будет доступно по адресу http://your-server-ip:8888/
 
 ### Вариант 2: Традиционный деплой
 
@@ -166,7 +166,7 @@ docker-compose up -d --build
 pip install gunicorn
 
 # Запустите приложение с помощью Gunicorn
-gunicorn -w 4 -b 0.0.0.0:8082 app:app
+gunicorn -w 4 -b 0.0.0.0:8888 app:app
 ```
 
 ## Обслуживание
@@ -248,12 +248,12 @@ pip install -r requirements.txt
 python app.py
 ```
 
-Приложение будет доступно по адресу http://localhost:8082/
+Приложение будет доступно по адресу http://localhost:8888/
 
 Вы можете указать другой порт с помощью параметра `--port`:
 
 ```bash
-python app.py --port 8083
+python app.py --port 8889
 ```
 
 ## Деплой
@@ -265,9 +265,77 @@ python app.py --port 8083
 pip install gunicorn
 
 # Запустите приложение с помощью Gunicorn
-gunicorn -w 4 -b 0.0.0.0:8082 app:app
+gunicorn -w 4 -b 0.0.0.0:8888 app:app
 ```
 
 ## Лицензия
+
+MIT
+
+## u0413u0440u0430u0444u0438u043a u041eu0442u0433u0440u0443u0437u043eu043a
+
+u041fu0440u043eu0441u0442u043eu0435 u0432u0435u0431-u043fu0440u0438u043bu043eu0436u0435u043du0438u0435 u043du0430 Flask u0434u043bu044f u0443u043fu0440u0430u0432u043bu0435u043du0438u044f u0433u0440u0430u0444u0438u043au043eu043c u043eu0442u0433u0440u0443u0437u043eu043a.
+
+## u0424u0443u043du043au0446u0438u0438
+
+- u041eu0442u043eu0431u0440u0430u0436u0435u043du0438u0435 u0442u0435u043au0443u0449u0438u0445 u0438 u0431u0443u0434u0443u0449u0438u0445 u043eu0442u0433u0440u0443u0437u043eu043a
+- u0414u043eu0431u0430u0432u043bu0435u043du0438u0435 u043du043eu0432u044bu0445 u043eu0442u0433u0440u0443u0437u043eu043a
+- u0420u0435u0434u0430u043au0442u0438u0440u043eu0432u0430u043du0438u0435 u0441u0443u0447u0435u0441u0442u0432u0443u044eu0449u0438u0445 u043eu0442u0433u0440u0443u0437u043eu043a
+- u041fu0440u0438u043cu0435u0447u0430u043du0438u0435 u0434u043bu044f u043cu0435u043du0435u0434u0436u0435u0440u043eu0432
+
+## u0423u0441u0442u0430u043du043eu0432u043au0430 u0438 u0437u0430u043fu0443u0441u043a
+
+### u041bu043eu043au0430u043bu044cu043du044bu0439 u0437u0430u043fu0443u0441u043a
+
+1. u041au043bu043eu043du0438u0440u0443u0439u0442u0435 u0440u0435u043fu043eu0437u0438u0442u043eu0440u0438u0439:
+
+```bash
+git clone https://github.com/Oscardkyou/logistic-microservice.git
+cd logistic-microservice
+```
+
+2. u0423u0441u0442u0430u043du043eu0432u0438u0442u0435 u0437u0430u0432u0438u0441u043cu043eu0441u0442u0438:
+
+```bash
+pip install -r requirements.txt
+```
+
+3. u0417u0430u043fu0443u0441u0442u0438u0442u0435 u043fu0440u0438u043bu043eu0436u0435u043du0438u0435:
+
+```bash
+python app.py
+```
+
+u041fu0440u0438u043bu043eu0436u0435u043du0438u0435 u0431u0443u0434u0435u0442 u0434u043eu0441u0442u0443u043fu043du043e u043fu043e u0430u0434u0440u0435u0441u0443 http://localhost:8888
+
+### u0417u0430u043fu0443u0441u043a u0441 u0438u0441u043fu043eu043bu044cu0437u043eu0432u0430u043du0438u0435u043c Docker
+
+1. u041au043bu043eu043du0438u0440u0443u0439u0442u0435 u0440u0435u043fu043eu0437u0438u0442u043eu0440u0438u0439:
+
+```bash
+git clone https://github.com/Oscardkyou/logistic-microservice.git
+cd logistic-microservice
+```
+
+2. u0421u043eu0431u0435u0440u0438u0442u0435 u0438 u0437u0430u043fu0443u0441u0442u0438u0442u0435 Docker-u043au043eu043du0442u0435u0439u043du0435u0440:
+
+```bash
+# u0421u0431u043eu0440u043au0430 u043eo0431u0440u0430u0437u0430
+docker build -t logistics-app .
+
+# u0417u0430u043fu0443u0441u043a u043au043eu043du0442u0435u0439u043du0435u0440u0430
+docker run -d --name logistics-app -p 8888:8888 -v "$(pwd)/shipments.json:/app/shipments.json" logistics-app
+```
+
+u041fu0440u0438u043bu043eu0436u0435u043du0438u0435 u0431u0443u0434u0435u0442 u0434u043eu0441u0442u0443u043fu043du043e u043fu043e u0430u0434u0440u0435u0441u0443 http://localhost:8888
+
+## u0421u0442u0440u0443u043au0442u0443u0440u0430 u043fu0440u043eu0435u043au0442u0430
+
+- `app.py` - u043eu0441u043du043eu0432u043du043eu043e u0444u0430u0439u043b u043fu0440u0438u043bu043eu0436u0435u043du0438u044f
+- `shipments.json` - u0444u0430u0439u043b u0441 u0434u0430u043du043du044bu043cu0438 u043eu0431 u043eu0442u0433u0440u0443u0437u043au0430u0445
+- `templates/` - HTML-u0448u0430u0431u043bu043eu043du044b
+- `static/` - CSS, JavaScript u0438 u0434u0440u0443u0433u0438u0435 u0441u0442u0430u0442u0438u0447u0435u0441u043au0438u0435 u0444u0430u0439u043bu044b
+
+## u041bu0438u0446u0435u043du0437u0438u044f
 
 MIT
