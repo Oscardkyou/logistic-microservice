@@ -130,7 +130,7 @@ cd logistic-microservice
 docker-compose up -d
 ```
 
-Приложение будет доступно по адресу http://your-server-ip/
+Приложение будет доступно по адресу http://your-server-ip:8080/
 
 #### Полезные команды Docker Compose
 
@@ -149,9 +149,17 @@ docker-compose down
 docker-compose up -d --build
 ```
 
+#### Дополнительная информация
+
+Создаются два контейнера:
+- `logistics-app` - сам веб-сервер на Flask/Gunicorn (порт 8082)
+- `logistics-nginx` - Nginx для проксирования запросов и кеширования статических файлов (порт 8080)
+
+3. Приложение будет доступно по адресу http://your-server-ip:8080/
+
 ### Вариант 2: Традиционный деплой
 
-Для деплоя приложения на продакшн-сервере без Docker рекомендуется использовать Gunicorn или uWSGI вместе с Nginx:
+Для деплоя приложения на продакшн-сервере без Docker рекомендуется использовать Gunicorn и Nginx:
 
 ```bash
 # Установите Gunicorn
