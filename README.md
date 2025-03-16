@@ -104,6 +104,63 @@ sudo certbot --nginx -d shopnclick.kz -d www.shopnclick.kz
    sudo systemctl start logistics.service
    ```
 
+## Деплой с использованием Docker и Docker Compose
+
+### Вариант 1: Использование Docker и Docker Compose (рекомендуется)
+
+Проект подготовлен для деплоя с использованием Docker и Docker Compose, что упрощает процесс развертывания.
+
+#### Предварительные требования
+
+- Установленный Docker
+- Установленный Docker Compose
+
+#### Шаги для деплоя
+
+1. Клонируйте репозиторий на сервер:
+
+```bash
+git clone https://github.com/Oscardkyou/logistic-microservice.git
+cd logistic-microservice
+```
+
+2. Запустите приложение с помощью Docker Compose:
+
+```bash
+docker-compose up -d
+```
+
+Приложение будет доступно по адресу http://your-server-ip/
+
+#### Полезные команды Docker Compose
+
+- Просмотр логов:
+```bash
+docker-compose logs -f
+```
+
+- Остановка приложения:
+```bash
+docker-compose down
+```
+
+- Перезапуск приложения после изменений:
+```bash
+docker-compose up -d --build
+```
+
+### Вариант 2: Традиционный деплой
+
+Для деплоя приложения на продакшн-сервере без Docker рекомендуется использовать Gunicorn или uWSGI вместе с Nginx:
+
+```bash
+# Установите Gunicorn
+pip install gunicorn
+
+# Запустите приложение с помощью Gunicorn
+gunicorn -w 4 -b 0.0.0.0:8082 app:app
+```
+
 ## Обслуживание
 
 ### Резервное копирование данных
