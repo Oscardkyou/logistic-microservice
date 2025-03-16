@@ -1,0 +1,75 @@
+{
+  "week_start": "17.03.2025",
+  "week_end": "21.03.2025",
+  "shipments": [
+    {
+      "id": 1,
+      "day": "Понедельник",
+      "date": "17.03.2025",
+      "destination": "г. Астана (Цобель)",
+      "volume": "16 тонн",
+      "status": "confirmed"
+    },
+    {
+      "id": 2,
+      "day": "Вторник",
+      "date": "18.03.2025",
+      "destination": "г. Шымкент (Нигмат)",
+      "volume": "25 тонн",
+      "status": "confirmed"
+    },
+    {
+      "id": 3,
+      "day": "Среда",
+      "date": "19.03.2025",
+      "destination": "г. Шымкент(Нигмат)",
+      "volume": "20 ",
+      "status": "pending"
+    },
+    {
+      "id": 4,
+      "day": "",
+      "date": "23.03.2025",
+      "destination": "г. Шымкент(Нигмат)",
+      "volume": "20 ",
+      "status": "pending",
+      "week": "next"
+    },
+    {
+      "id": 5,
+      "day": "Вторник",
+      "date": "25.03.2025",
+      "destination": "г. Астана",
+      "volume": "20 ",
+      "status": "pending",
+      "week": "next"
+    },
+    {
+      "id": 6,
+      "day": "Пятница",
+      "date": "21.03.2025",
+      "destination": "ВЫХОДНОЙ",
+      "volume": "ВЫХОДНОЙ",
+      "status": "pending",
+      "week": "next"
+    },
+    {
+      "id": 7,
+      "day": "Пятница",
+      "date": "21.03.2025",
+      "destination": "ВЫХОДНОЙ",
+      "volume": "ВЫХОДНОЙ",
+      "status": "pending"
+    }
+  ],
+  "next_id": 8,
+  "next_note_id": 2,
+  "notes": [
+    {
+      "id": 1,
+      "author": "Дк",
+      "content": "Просчет по вагону\r\n",
+      "date": "17.03.2025 01:20"
+    }
+  ]
+}

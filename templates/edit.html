@@ -1,0 +1,202 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+  {% if is_next_week %}
+    <h1>Редактирование отгрузки на следующую неделю</h1>
+  {% else %}
+    <h1>Редактирование отгрузки</h1>
+  {% endif %}
+  
+  <form method="post" class="mt-4" data-is-next-week="{{ is_next_week|lower }}">
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="mb-3">
+          <label for="date" class="form-label">Дата отгрузки</label>
+          <input type="date" class="form-control" id="date" name="date" value="{{ date_for_input }}" required>
+          <small class="text-muted">Выберите дату, и день недели будет установлен автоматически</small>
+        </div>
+        
+        <div class="mb-3">
+          <label for="day" class="form-label">День недели</label>
+          <select class="form-select" id="day" name="day" required disabled>
+            {% for day in days %}
+              <option value="{{ day }}" {% if shipment.day == day %}selected{% endif %}>
+                {{ day }}
+              </option>
+            {% endfor %}
+          </select>
+          <input type="hidden" id="day_hidden" name="day" value="{{ shipment.day }}">
+        </div>
+        
+        <div class="mb-3">
+          <label for="destination" class="form-label">Пункт назначения</label>
+          <input type="text" class="form-control" id="destination" name="destination" value="{{ shipment.destination }}" required>
+        </div>
+        
+        <div class="mb-3">
+          <label for="volume" class="form-label">Объем</label>
+          <input type="text" class="form-control" id="volume" name="volume" value="{{ shipment.volume }}" required>
+        </div>
+        
+        <div class="mb-3">
+          <label for="status" class="form-label">Статус</label>
+          <select class="form-select" id="status" name="status" required>
+            <option value="confirmed" {% if shipment.status == 'confirmed' %}selected{% endif %}>Подтверждено</option>
+            <option value="pending" {% if shipment.status == 'pending' %}selected{% endif %}>Ожидается</option>
+          </select>
+        </div>
+        
+        <div class="mb-3">
+          <label class="form-label">Неделя</label>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="week" id="current_week" value="current" {% if not is_next_week %}checked{% endif %}>
+            <label class="form-check-label" for="current_week">
+              Текущая неделя
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="week" id="next_week" value="next" {% if is_next_week %}checked{% endif %}>
+            <label class="form-check-label" for="next_week">
+              Следующая неделя
+            </label>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h5>Превью выбранного дня</h5>
+          </div>
+          <div class="card-body">
+            <div id="preview" class="day-card day-{{ shipment.day }}">
+              <div class="day-header">
+                <div class="day-name" id="preview-day-name">{{ shipment.day }}</div>
+                <div class="day-date" id="preview-day-date">{{ shipment.date }}</div>
+              </div>
+              <div class="shipment">
+                <div class="destination" id="preview-destination">{{ shipment.destination }}</div>
+                <div class="volume" id="preview-volume">{{ shipment.volume }}</div>
+                <div class="status {{ shipment.status }}" id="preview-status">
+                  {% if shipment.status == 'confirmed' %}
+                    Подтверждено
+                  {% else %}
+                    Ожидается
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-4">
+              <h6>Цветовая кодировка дней недели:</h6>
+              <div class="d-flex flex-wrap gap-2 mt-2">
+                <div class="color-sample day-Воскресенье">Воскресенье</div>
+                <div class="color-sample day-Понедельник">Понедельник</div>
+                <div class="color-sample day-Вторник">Вторник</div>
+                <div class="color-sample day-Среда">Среда</div>
+                <div class="color-sample day-Четверг">Четверг</div>
+                <div class="color-sample day-Пятница">Пятница</div>
+                <div class="color-sample day-Суббота">Суббота</div>
+              </div>
+            </div>
+            
+            <div class="alert alert-info mt-4">
+              <i class="bi bi-info-circle"></i> 
+              {% if is_next_week %}
+                Нота отгрузки запланирована на <strong>следующую неделю</strong>.
+              {% else %}
+                Нота отгрузки запланирована на <strong>текущую неделю</strong>.
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="d-flex justify-content-between mt-4">
+      <a href="{{ url_for('index') }}" class="btn btn-secondary">Отмена</a>
+      <button type="submit" class="btn btn-primary">Сохранить</button>
+    </div>
+  </form>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const dateInput = document.getElementById('date');
+      const daySelect = document.getElementById('day');
+      const dayHidden = document.getElementById('day_hidden');
+      const previewDayName = document.getElementById('preview-day-name');
+      const previewDayDate = document.getElementById('preview-day-date');
+      const previewDestination = document.getElementById('preview-destination');
+      const previewVolume = document.getElementById('preview-volume');
+      const previewStatus = document.getElementById('preview-status');
+      const preview = document.getElementById('preview');
+      const destinationInput = document.getElementById('destination');
+      const volumeInput = document.getElementById('volume');
+      const statusSelect = document.getElementById('status');
+      const currentWeekRadio = document.getElementById('current_week');
+      const nextWeekRadio = document.getElementById('next_week');
+      
+      // Дни недели на русском
+      const daysOfWeek = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+      
+      // Обработчик изменения даты
+      dateInput.addEventListener('change', function() {
+        if (this.value) {
+          const date = new Date(this.value);
+          const dayOfWeek = daysOfWeek[date.getDay()];
+          
+          // Установка дня недели
+          for (let i = 0; i < daySelect.options.length; i++) {
+            if (daySelect.options[i].value === dayOfWeek) {
+              daySelect.selectedIndex = i;
+              dayHidden.value = dayOfWeek;
+              break;
+            }
+          }
+          
+          // Обновление превью
+          previewDayName.textContent = dayOfWeek;
+          previewDayDate.textContent = formatDate(date);
+          preview.className = 'day-card day-' + dayOfWeek;
+        }
+      });
+      
+      // Обработчики для обновления превью
+      destinationInput.addEventListener('input', function() {
+        previewDestination.textContent = this.value || 'Пункт назначения';
+      });
+      
+      volumeInput.addEventListener('input', function() {
+        previewVolume.textContent = this.value || 'Объем';
+      });
+      
+      statusSelect.addEventListener('change', function() {
+        const status = this.value === 'confirmed' ? 'Подтверждено' : 'Ожидается';
+        const statusClass = this.value === 'confirmed' ? 'confirmed' : 'pending';
+        previewStatus.textContent = status;
+        previewStatus.className = 'status ' + statusClass;
+      });
+      
+      // Обработчики для переключения недели
+      currentWeekRadio.addEventListener('change', function() {
+        if (this.checked) {
+          document.querySelector('.alert-info').innerHTML = '<i class="bi bi-info-circle"></i> Нота отгрузки запланирована на <strong>текущую неделю</strong>.';
+        }
+      });
+      
+      nextWeekRadio.addEventListener('change', function() {
+        if (this.checked) {
+          document.querySelector('.alert-info').innerHTML = '<i class="bi bi-info-circle"></i> Нота отгрузки запланирована на <strong>следующую неделю</strong>.';
+        }
+      });
+      
+      // Форматирование даты в формат DD.MM.YYYY
+      function formatDate(date) {
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}.${month}.${year}`;
+      }
+    });
+  </script>
+{% endblock %}
