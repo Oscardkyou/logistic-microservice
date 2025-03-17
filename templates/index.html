@@ -2,13 +2,27 @@
 
 {% block content %}
   <h1 class="text-center mb-4">График отгрузок по регионам Казахстана</h1>
-  
-  <!-- Информация о рабочих днях -->
-  <div class="alert alert-info mb-4">
-    <h4 class="alert-heading">Рабочие дни: 17-20 марта 2025</h4>
-    <p class="mb-0">Внимание! 21 марта - праздник Наурыз, выходной день.</p>
+
+  <!-- Дашборд с общей статистикой -->
+  <div class="stats-panel mb-4">
+    <div class="stat-item">
+      <span class="stat-value" id="total-volume">0</span>
+      <span class="stat-label">Общий объем (тонн)</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value" id="current-week-volume">0</span>
+      <span class="stat-label">Текущая неделя (тонн)</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value" id="next-week-volume">0</span>
+      <span class="stat-label">Следующая неделя (тонн)</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-value" id="total-shipments">0</span>
+      <span class="stat-label">Всего отгрузок</span>
+    </div>
   </div>
-  
+
   <!-- Навигация по неделям -->
   <ul class="nav nav-tabs mb-4" id="weekTabs" role="tablist">
     <li class="nav-item" role="presentation">
@@ -22,239 +36,295 @@
       </button>
     </li>
   </ul>
-  
+
   <!-- Содержимое вкладок -->
   <div class="tab-content" id="weekTabsContent">
     <!-- Текущая неделя -->
     <div class="tab-pane fade show active" id="current-week" role="tabpanel" aria-labelledby="current-week-tab">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="mb-0">Общий объем на текущую неделю: <span class="badge bg-primary">{{ current_week_volume }} тонн</span></h5>
-        <a href="{{ url_for('add_shipment') }}" class="btn btn-success"><i class="bi bi-plus-circle"></i> Добавить отгрузку</a>
+      <div class="d-flex justify-content-end mb-3">
+        <a href="{{ url_for('add_shipment') }}" class="btn btn-primary">
+          <i class="bi bi-plus-circle"></i> Добавить отгрузку
+        </a>
       </div>
-      
-      <div class="row">
-        {% for day in days[:3] %}
-        <div class="col-md-4 mb-4">
-          <div class="card h-100 day-card">
-            <div class="card-header {{ 'bg-primary text-white' if day == 'Понедельник' else 'bg-success text-white' if day == 'Вторник' else 'bg-purple text-white' if day == 'Среда' else 'bg-danger text-white' if day == 'Четверг' else 'bg-warning' if day == 'Пятница' else 'bg-orange' if day == 'Суббота' else 'bg-secondary' }}">
-              <div class="d-flex justify-content-between align-items-center">
-                <span class="day-name">{{ day }}</span>
-                <div class="day-date">
-                  {% if day == 'Понедельник' %}
-                    17 марта
-                  {% elif day == 'Вторник' %}
-                    18 марта
-                  {% elif day == 'Среда' %}
-                    19 марта
-                  {% endif %}
-                </div>
-              </div>
-            </div>
-            
-            <div class="day-content">
-              {% if current_week_by_day[day] %}
-                {% for shipment in current_week_by_day[day] %}
-                  <div class="shipment">
-                    <div class="shipment-header">
-                      <div class="date">{{ shipment.date }}</div>
-                      <div class="actions">
-                        <a href="{{ url_for('edit_shipment', id=shipment.id) }}" class="btn btn-sm btn-outline-primary">
-                          <i class="bi bi-pencil"></i>
-                        </a>
-                        <a href="{{ url_for('delete_shipment', id=shipment.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Вы уверены, что хотите удалить эту отгрузку?');">
-                          <i class="bi bi-trash"></i>
-                        </a>
-                      </div>
-                    </div>
-                    <div class="destination">{{ shipment.destination }}</div>
-                    <div class="volume">{{ shipment.volume }}</div>
-                    <div class="status {{ shipment.status }}">
-                      {% if shipment.status == 'confirmed' %}
-                        ✓ Подтверждено
-                      {% else %}
-                        ⏳ Ожидается
-                      {% endif %}
-                    </div>
-                  </div>
-                {% endfor %}
-              {% else %}
-                <div class="no-shipments">Отгрузки не запланированы</div>
+
+      <div class="schedule-grid">
+        {% for day in days[:5] %}
+        <div class="day-card day-{{ day }}">
+          <div class="day-header">
+            <div class="day-name">{{ day }}</div>
+            <div class="day-date">
+              {% if day == 'Понедельник' %}
+                {{ current_week_dates.split(' - ')[0] }}
+              {% elif day == 'Вторник' %}
+                {{ (current_week_dates.split(' - ')[0]|int + 1)|string + current_week_dates.split(' - ')[0][2:] }}
+              {% elif day == 'Среда' %}
+                {{ (current_week_dates.split(' - ')[0]|int + 2)|string + current_week_dates.split(' - ')[0][2:] }}
+              {% elif day == 'Четверг' %}
+                {{ (current_week_dates.split(' - ')[0]|int + 3)|string + current_week_dates.split(' - ')[0][2:] }}
+              {% elif day == 'Пятница' %}
+                {{ current_week_dates.split(' - ')[1] }}
               {% endif %}
             </div>
           </div>
-        </div>
-        {% endfor %}
-        
-        {% for day in days[3:] %}
-        <div class="col-md-4 mb-4">
-          <div class="card h-100 day-card">
-            <div class="card-header {{ 'bg-primary text-white' if day == 'Понедельник' else 'bg-success text-white' if day == 'Вторник' else 'bg-purple text-white' if day == 'Среда' else 'bg-danger text-white' if day == 'Четверг' else 'bg-warning' if day == 'Пятница' else 'bg-orange' if day == 'Суббота' else 'bg-secondary' }}">
-              <div class="d-flex justify-content-between align-items-center">
-                <span class="day-name">{{ day }}</span>
-                <div class="day-date">
-                  {% if day == 'Четверг' %}
-                    20 марта
-                  {% elif day == 'Пятница' %}
-                    21 марта
-                  {% elif day == 'Суббота' %}
-                    22 марта
-                  {% elif day == 'Воскресенье' %}
-                    23 марта
-                  {% endif %}
-                </div>
-              </div>
-            </div>
-            
-            <div class="day-content">
-              {% if current_week_by_day[day] %}
-                {% for shipment in current_week_by_day[day] %}
-                  <div class="shipment">
-                    <div class="shipment-header">
-                      <div class="date">{{ shipment.date }}</div>
-                      <div class="actions">
-                        <a href="{{ url_for('edit_shipment', id=shipment.id) }}" class="btn btn-sm btn-outline-primary">
-                          <i class="bi bi-pencil"></i>
-                        </a>
-                        <a href="{{ url_for('delete_shipment', id=shipment.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Вы уверены, что хотите удалить эту отгрузку?');">
-                          <i class="bi bi-trash"></i>
-                        </a>
-                      </div>
-                    </div>
-                    <div class="destination">{{ shipment.destination }}</div>
-                    <div class="volume">{{ shipment.volume }}</div>
-                    <div class="status {{ shipment.status }}">
-                      {% if shipment.status == 'confirmed' %}
-                        ✓ Подтверждено
-                      {% else %}
-                        ⏳ Ожидается
-                      {% endif %}
-                    </div>
-                  </div>
-                {% endfor %}
-              {% else %}
-                <div class="no-shipments">Отгрузки не запланированы</div>
-              {% endif %}
-            </div>
+
+          <div class="day-content">
+            <div id="current-week-{{ day }}-shipments"></div>
           </div>
         </div>
         {% endfor %}
       </div>
     </div>
-    
+
     <!-- Следующая неделя -->
     <div class="tab-pane fade" id="next-week" role="tabpanel" aria-labelledby="next-week-tab">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h5 class="mb-0">Общий объем на следующую неделю: <span class="badge bg-primary">{{ next_week_volume }} тонн</span></h5>
-        <a href="{{ url_for('add_shipment', week='next') }}" class="btn btn-success"><i class="bi bi-plus-circle"></i> Добавить отгрузку на следующую неделю</a>
+      <div class="d-flex justify-content-end mb-3">
+        <a href="{{ url_for('add_shipment', week='next') }}" class="btn btn-primary">
+          <i class="bi bi-plus-circle"></i> Добавить отгрузку на следующую неделю
+        </a>
       </div>
-      
-      <div class="row">
-        {% for day in days %}
-        <div class="col-md-4 mb-4">
-          <div class="card h-100 day-card">
-            <div class="card-header {{ 'bg-primary text-white' if day == 'Понедельник' else 'bg-success text-white' if day == 'Вторник' else 'bg-purple text-white' if day == 'Среда' else 'bg-danger text-white' if day == 'Четверг' else 'bg-warning' if day == 'Пятница' else 'bg-orange' if day == 'Суббота' else 'bg-secondary' }}">
-              <div class="d-flex justify-content-between align-items-center">
-                <span class="day-name">{{ day }}</span>
-                <div class="day-date">
-                  {% if day == 'Понедельник' %}
-                    24 марта
-                  {% elif day == 'Вторник' %}
-                    25 марта
-                  {% elif day == 'Среда' %}
-                    26 марта
-                  {% elif day == 'Четверг' %}
-                    27 марта
-                  {% elif day == 'Пятница' %}
-                    28 марта
-                  {% elif day == 'Суббота' %}
-                    29 марта
-                  {% elif day == 'Воскресенье' %}
-                    30 марта
-                  {% endif %}
-                </div>
-              </div>
-            </div>
-            
-            <div class="day-content">
-              {% if next_week_by_day[day] %}
-                {% for shipment in next_week_by_day[day] %}
-                  <div class="shipment">
-                    <div class="shipment-header">
-                      <div class="date">{{ shipment.date }}</div>
-                      <div class="actions">
-                        <a href="{{ url_for('edit_shipment', id=shipment.id) }}" class="btn btn-sm btn-outline-primary">
-                          <i class="bi bi-pencil"></i>
-                        </a>
-                        <a href="{{ url_for('delete_shipment', id=shipment.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Вы уверены, что хотите удалить эту отгрузку?');">
-                          <i class="bi bi-trash"></i>
-                        </a>
-                      </div>
-                    </div>
-                    <div class="destination">{{ shipment.destination }}</div>
-                    <div class="volume">{{ shipment.volume }}</div>
-                    <div class="status {{ shipment.status }}">
-                      {% if shipment.status == 'confirmed' %}
-                        ✓ Подтверждено
-                      {% else %}
-                        ⏳ Ожидается
-                      {% endif %}
-                    </div>
-                  </div>
-                {% endfor %}
-              {% else %}
-                <div class="no-shipments">Отгрузки не запланированы</div>
+
+      <div class="schedule-grid">
+        {% for day in days[:5] %}
+        <div class="day-card day-{{ day }}">
+          <div class="day-header">
+            <div class="day-name">{{ day }}</div>
+            <div class="day-date">
+              {% if day == 'Понедельник' %}
+                {{ next_week_dates.split(' - ')[0] }}
+              {% elif day == 'Вторник' %}
+                {{ (next_week_dates.split(' - ')[0]|int + 1)|string + next_week_dates.split(' - ')[0][2:] }}
+              {% elif day == 'Среда' %}
+                {{ (next_week_dates.split(' - ')[0]|int + 2)|string + next_week_dates.split(' - ')[0][2:] }}
+              {% elif day == 'Четверг' %}
+                {{ (next_week_dates.split(' - ')[0]|int + 3)|string + next_week_dates.split(' - ')[0][2:] }}
+              {% elif day == 'Пятница' %}
+                {{ next_week_dates.split(' - ')[1] }}
               {% endif %}
             </div>
+          </div>
+
+          <div class="day-content">
+            <div id="next-week-{{ day }}-shipments"></div>
           </div>
         </div>
         {% endfor %}
       </div>
     </div>
   </div>
-  
+
   <!-- Секция для примечаний и пожеланий руководства -->
-  <div class="mt-5">
-    <div class="card">
-      <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Примечания и пожелания руководства</h5>
-      </div>
-      <div class="card-body">
-        <div id="notes-container">
-          {% if notes %}
-            {% for note in notes %}
-              <div class="note-item mb-3 p-3 border rounded">
-                <div class="d-flex justify-content-between align-items-start">
-                  <div>
-                    <strong>{{ note.author }}</strong> <small class="text-muted">{{ note.date }}</small>
-                  </div>
-                  <div>
-                    <a href="{{ url_for('delete_note', id=note.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Вы уверены, что хотите удалить это примечание?');">
-                      <i class="bi bi-trash"></i>
-                    </a>
-                  </div>
-                </div>
-                <p class="mt-2 mb-0">{{ note.content }}</p>
-              </div>
-            {% endfor %}
-          {% else %}
-            <p class="text-muted">Пока нет примечаний.</p>
-          {% endif %}
+  {% if notes %}
+  <div class="notes-card mt-4">
+    <h5 class="notes-header">
+      <i class="bi bi-info-circle"></i> Примечания руководства
+    </h5>
+    <div class="notes-content">
+      <ul class="list-group list-group-flush">
+        {% for note in notes %}
+        <li class="list-group-item d-flex justify-content-between align-items-start">
+          <div class="ms-2 me-auto">
+            <div class="fw-bold">{{ note.author }} ({{ note.date }})</div>
+            {{ note.content|safe }}
+          </div>
+          <a href="{{ url_for('delete_note', id=note.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Вы уверены, что хотите удалить это примечание?');">
+            <i class="bi bi-trash"></i>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="mt-3">
+      <a href="#" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addNoteModal">
+        <i class="bi bi-plus-circle"></i> Добавить примечание
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
+<!-- График объемов по дням недели -->
+<div class="card mb-4">
+  <div class="card-body">
+    <h5 class="card-title">Объемы отгрузок по дням недели</h5>
+    <canvas id="volumeChart" height="100"></canvas>
+  </div>
+</div>
+
+  <!-- Модальное окно для добавления примечания -->
+  <div class="modal fade" id="addNoteModal" tabindex="-1" aria-labelledby="addNoteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addNoteModalLabel">Добавить примечание</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
         </div>
-        
-        <hr>
-        
         <form action="{{ url_for('add_note') }}" method="post">
-          <div class="mb-3">
-            <label for="author" class="form-label">Ваше имя</label>
-            <input type="text" class="form-control" id="author" name="author" required>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="author" class="form-label">Автор</label>
+              <input type="text" class="form-control" id="author" name="author" required>
+            </div>
+            <div class="mb-3">
+              <label for="content" class="form-label">Содержание</label>
+              <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
+            </div>
           </div>
-          <div class="mb-3">
-            <label for="content" class="form-label">Примечание или пожелание</label>
-            <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+            <button type="submit" class="btn btn-primary">Сохранить</button>
           </div>
-          <button type="submit" class="btn btn-primary">Добавить примечание</button>
         </form>
       </div>
     </div>
   </div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Подключаем Chart.js для графика -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- Используем AJAX для загрузки данных с API -->
+<script>
+  // Базовые URL-адреса для действий
+  const editShipmentUrl = "{{ url_for('edit_shipment', id=0) }}".slice(0, -1); // Удаляем последний символ '0'
+  const deleteShipmentUrl = "{{ url_for('delete_shipment', id=0) }}".slice(0, -1); // Удаляем последний символ '0'
+
+  // Глобальные переменные для данных графика
+  let currentWeekVolumeData = [];
+  let nextWeekVolumeData = [];
+  let daysLabels = [];
+  let days = [];
+
+  // Загружаем данные с API
+  function loadChartData() {
+    fetch('/api/shipment-volumes')
+      .then(response => response.json())
+      .then(data => {
+        // Сохраняем данные в глобальные переменные
+        daysLabels = data.days;
+        currentWeekVolumeData = data.currentWeek;
+        nextWeekVolumeData = data.nextWeek;
+
+        // Инициализируем график
+        initVolumeChart(currentWeekVolumeData, nextWeekVolumeData);
+      })
+      .catch(error => console.error('Ошибка загрузки данных графика:', error));
+  }
+
+  // Загружаем данные для таблицы
+  function loadShipmentsData() {
+    fetch('/api/shipments')
+      .then(response => response.json())
+      .then(data => {
+        // Сохраняем список дней
+        days = data.days;
+
+        // Обновляем статистику
+        updateStats(data.stats);
+
+        // Обновляем таблицу
+        updateShipmentsTable(data);
+      })
+      .catch(error => console.error('Ошибка загрузки данных отгрузок:', error));
+  }
+
+  // Обновляем статистику
+  function updateStats(stats) {
+    document.getElementById('total-volume').textContent = stats.totalVolume;
+    document.getElementById('current-week-volume').textContent = stats.totalCurrentWeekVolume;
+    document.getElementById('next-week-volume').textContent = stats.totalNextWeekVolume;
+    document.getElementById('total-shipments').textContent = stats.totalShipments;
+  }
+
+  // Обновляем таблицу
+  function updateShipmentsTable(data) {
+    // Обновляем таблицу для текущей недели
+    for (let day of days) {
+      let shipments = data.currentWeek[day];
+      let html = '';
+      if (shipments && shipments.length > 0) {
+        for (let shipment of shipments) {
+          html += `
+            <div class="shipment ${shipment.status}">
+              <div class="shipment-header">
+                <div class="date">${shipment.date}</div>
+                <div class="actions">
+                  <a href="${editShipmentUrl}${shipment.id}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Редактировать">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <a href="${deleteShipmentUrl}${shipment.id}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Вы уверены, что хотите удалить эту отгрузку?');" data-bs-toggle="tooltip" title="Удалить">
+                    <i class="bi bi-trash"></i>
+                  </a>
+                </div>
+              </div>
+              <div class="destination">${shipment.destination}</div>
+              <div class="volume">${shipment.volume}</div>
+              <div class="status">
+                ${shipment.status === 'confirmed' ? '<span class="badge bg-success">✓ Подтверждено</span>' : '<span class="badge bg-warning text-dark">⏳ Ожидается</span>'}
+              </div>
+            </div>
+          `;
+        }
+      } else {
+        html = '<div class="no-shipments">Отгрузки не запланированы</div>';
+      }
+
+      const container = document.getElementById(`current-week-${day}-shipments`);
+      if (container) {
+        container.innerHTML = html;
+      }
+    }
+
+    // Обновляем таблицу для следующей недели
+    for (let day of days) {
+      let shipments = data.nextWeek[day];
+      let html = '';
+      if (shipments && shipments.length > 0) {
+        for (let shipment of shipments) {
+          html += `
+            <div class="shipment ${shipment.status}">
+              <div class="shipment-header">
+                <div class="date">${shipment.date}</div>
+                <div class="actions">
+                  <a href="${editShipmentUrl}${shipment.id}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Редактировать">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <a href="${deleteShipmentUrl}${shipment.id}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Вы уверены, что хотите удалить эту отгрузку?');" data-bs-toggle="tooltip" title="Удалить">
+                    <i class="bi bi-trash"></i>
+                  </a>
+                </div>
+              </div>
+              <div class="destination">${shipment.destination}</div>
+              <div class="volume">${shipment.volume}</div>
+              <div class="status">
+                ${shipment.status === 'confirmed' ? '<span class="badge bg-success">✓ Подтверждено</span>' : '<span class="badge bg-warning text-dark">⏳ Ожидается</span>'}
+              </div>
+            </div>
+          `;
+        }
+      } else {
+        html = '<div class="no-shipments">Отгрузки не запланированы</div>';
+      }
+
+      const container = document.getElementById(`next-week-${day}-shipments`);
+      if (container) {
+        container.innerHTML = html;
+      }
+    }
+
+    // Переинициализируем тултипы после обновления DOM
+    initTooltips();
+  }
+
+  // При загрузке страницы
+  document.addEventListener('DOMContentLoaded', function() {
+    // Загружаем данные для графика
+    loadChartData();
+
+    // Загружаем данные для таблицы
+    loadShipmentsData();
+  });
+</script>
+
+<!-- Подключаем наш JavaScript файл с функциями -->
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
 {% endblock %}

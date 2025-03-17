@@ -1,11 +1,11 @@
 {
-  "week_start": "17.03.2025",
-  "week_end": "21.03.2025",
+  "week_start": "18.03.2025",
+  "week_end": "22.03.2025",
   "shipments": [
     {
       "id": 1,
       "day": "Понедельник",
-      "date": "17.03.2025",
+      "date": "18.03.2025",
       "destination": "г. Астана (Цобель)",
       "volume": "16 тонн",
       "status": "confirmed"
@@ -13,7 +13,7 @@
     {
       "id": 2,
       "day": "Вторник",
-      "date": "18.03.2025",
+      "date": "19.03.2025",
       "destination": "г. Шымкент (Нигмат)",
       "volume": "25 тонн",
       "status": "confirmed"
@@ -21,54 +21,52 @@
     {
       "id": 3,
       "day": "Среда",
-      "date": "19.03.2025",
+      "date": "20.03.2025",
       "destination": "г. Шымкент(Нигмат)",
-      "volume": "20 ",
+      "volume": "20 тонн",
       "status": "pending"
     },
     {
       "id": 4,
-      "day": "",
-      "date": "23.03.2025",
-      "destination": "г. Шымкент(Нигмат)",
-      "volume": "20 ",
-      "status": "pending",
-      "week": "next"
+      "day": "Четверг",
+      "date": "21.03.2025",
+      "destination": "г. Алматы",
+      "volume": "18 тонн",
+      "status": "pending"
     },
     {
       "id": 5,
-      "day": "Вторник",
-      "date": "25.03.2025",
+      "day": "Пятница",
+      "date": "22.03.2025",
       "destination": "г. Астана",
-      "volume": "20 ",
-      "status": "pending",
-      "week": "next"
+      "volume": "20 тонн",
+      "status": "pending"
     },
     {
       "id": 6,
-      "day": "Пятница",
-      "date": "21.03.2025",
-      "destination": "ВЫХОДНОЙ",
-      "volume": "ВЫХОДНОЙ",
+      "day": "Понедельник",
+      "date": "25.03.2025",
+      "destination": "г. Актау",
+      "volume": "22 тонн",
       "status": "pending",
       "week": "next"
     },
     {
       "id": 7,
-      "day": "Пятница",
-      "date": "21.03.2025",
-      "destination": "ВЫХОДНОЙ",
-      "volume": "ВЫХОДНОЙ",
-      "status": "pending"
+      "day": "Вторник",
+      "date": "26.03.2025",
+      "destination": "г. Астана",
+      "volume": "20 тонн",
+      "status": "pending",
+      "week": "next"
     },
     {
       "id": 8,
       "day": "Понедельник",
-      "date": "24.03.2025",
-      "destination": "ыва",
-      "volume": "ыва",
-      "status": "pending",
-      "week": "next"
+      "date": "17.03.2025",
+      "destination": "ыв",
+      "volume": "ываыа",
+      "status": "pending"
     }
   ],
   "next_id": 9,
@@ -78,7 +76,7 @@
       "id": 1,
       "author": "Дк",
       "content": "Просчет по вагону\r\n",
-      "date": "17.03.2025 01:20"
+      "date": "18.03.2025 10:20"
     }
   ]
 }

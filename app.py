@@ -14,31 +14,28 @@ DATA_FILE = 'shipments.json'
 # Initialize data if it doesn't exist
 def init_data():
     """Инициализация данных или загрузка существующих"""
-    # Устанавливаем фиксированные даты для текущей недели (17-20 марта 2025)
-    # 21 марта - праздник Наурыз
-    current_week_start = datetime(2025, 3, 17)  # Понедельник, 17 марта 2025
-    current_week_end = datetime(2025, 3, 20)    # Четверг, 20 марта 2025
+    # Получаем текущую дату
+    today = datetime.now()
     
-    # Следующая неделя начинается с 22 марта (после праздника)
-    next_week_start = datetime(2025, 3, 22)  # Суббота, 22 марта 2025
-    next_week_end = datetime(2025, 3, 28)    # Пятница, 28 марта 2025
+    # Находим ближайший понедельник (начало текущей недели)
+    days_until_monday = (0 - today.weekday()) % 7
+    current_week_start = today + timedelta(days=days_until_monday)
+    
+    # Конец текущей недели - пятница
+    current_week_end = current_week_start + timedelta(days=4)  # +4 дня = пятница
+    
+    # Следующая неделя начинается со следующего понедельника
+    next_week_start = current_week_start + timedelta(days=7)
+    next_week_end = next_week_start + timedelta(days=4)  # +4 дня = пятница
     
     # Форматирование дат для отображения
-    current_week_str = f"17.03 - 20.03.2025"
-    next_week_str = f"22.03 - 28.03.2025"
+    current_week_str = f"{current_week_start.strftime('%d.%m')} - {current_week_end.strftime('%d.%m.%Y')}"
+    next_week_str = f"{next_week_start.strftime('%d.%m')} - {next_week_end.strftime('%d.%m.%Y')}"
     
     # Создание структуры данных
     data = {
-        'current_week': {
-            'start': current_week_start,
-            'end': current_week_end,
-            'display': current_week_str
-        },
-        'next_week': {
-            'start': next_week_start,
-            'end': next_week_end,
-            'display': next_week_str
-        },
+        'week_start': current_week_start.strftime('%d.%m.%Y'),
+        'week_end': current_week_end.strftime('%d.%m.%Y'),
         'shipments': [],
         'next_id': 1,
         'notes': [],
@@ -47,26 +44,20 @@ def init_data():
     
     # Сохранение данных в JSON файл
     with open('shipments.json', 'w', encoding='utf-8') as f:
-        # Преобразование дат в строки для JSON
-        json_data = {
-            'current_week': {
-                'start': current_week_start.strftime('%Y-%m-%d'),
-                'end': current_week_end.strftime('%Y-%m-%d'),
-                'display': current_week_str
-            },
-            'next_week': {
-                'start': next_week_start.strftime('%Y-%m-%d'),
-                'end': next_week_end.strftime('%Y-%m-%d'),
-                'display': next_week_str
-            },
-            'shipments': [],
-            'next_id': 1,
-            'notes': [],
-            'next_note_id': 1
-        }
-        json.dump(json_data, f, ensure_ascii=False, indent=2)
+        json.dump(data, f, ensure_ascii=False, indent=2)
     
     return data
+
+# Get day of week from date
+def get_day_of_week(date_str):
+    """Получить день недели из строки даты в формате DD.MM.YYYY"""
+    try:
+        date_obj = datetime.strptime(date_str, '%d.%m.%Y')
+        days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
+        return days[date_obj.weekday()]
+    except Exception as e:
+        print(f"Ошибка при определении дня недели: {e}")
+        return ""
 
 # Load data from file
 def load_data():
@@ -79,17 +70,10 @@ def load_data():
             data = json.load(f)
             
             # Преобразование строк дат в объекты datetime
-            if 'current_week' in data and isinstance(data['current_week'], dict):
-                if 'start' in data['current_week']:
-                    data['current_week']['start'] = datetime.strptime(data['current_week']['start'], '%Y-%m-%d')
-                if 'end' in data['current_week']:
-                    data['current_week']['end'] = datetime.strptime(data['current_week']['end'], '%Y-%m-%d')
-            
-            if 'next_week' in data and isinstance(data['next_week'], dict):
-                if 'start' in data['next_week']:
-                    data['next_week']['start'] = datetime.strptime(data['next_week']['start'], '%Y-%m-%d')
-                if 'end' in data['next_week']:
-                    data['next_week']['end'] = datetime.strptime(data['next_week']['end'], '%Y-%m-%d')
+            if 'week_start' in data:
+                data['week_start'] = datetime.strptime(data['week_start'], '%d.%m.%Y')
+            if 'week_end' in data:
+                data['week_end'] = datetime.strptime(data['week_end'], '%d.%m.%Y')
             
             # Добавление next_id, если его нет
             if 'next_id' not in data:
@@ -118,17 +102,10 @@ def save_data(data):
     # Преобразование дат в строки для JSON
     json_data = copy.deepcopy(data)
     
-    if 'current_week' in json_data and isinstance(json_data['current_week'], dict):
-        if 'start' in json_data['current_week'] and isinstance(json_data['current_week']['start'], datetime):
-            json_data['current_week']['start'] = json_data['current_week']['start'].strftime('%Y-%m-%d')
-        if 'end' in json_data['current_week'] and isinstance(json_data['current_week']['end'], datetime):
-            json_data['current_week']['end'] = json_data['current_week']['end'].strftime('%Y-%m-%d')
-    
-    if 'next_week' in json_data and isinstance(json_data['next_week'], dict):
-        if 'start' in json_data['next_week'] and isinstance(json_data['next_week']['start'], datetime):
-            json_data['next_week']['start'] = json_data['next_week']['start'].strftime('%Y-%m-%d')
-        if 'end' in json_data['next_week'] and isinstance(json_data['next_week']['end'], datetime):
-            json_data['next_week']['end'] = json_data['next_week']['end'].strftime('%Y-%m-%d')
+    if 'week_start' in json_data:
+        json_data['week_start'] = json_data['week_start'].strftime('%d.%m.%Y')
+    if 'week_end' in json_data:
+        json_data['week_end'] = json_data['week_end'].strftime('%d.%m.%Y')
     
     with open(DATA_FILE, 'w', encoding='utf-8') as f:
         json.dump(json_data, f, ensure_ascii=False, indent=2)
@@ -179,8 +156,8 @@ def index():
             next_week_by_day[day].append(shipment)
     
     # Получаем строки с датами для отображения
-    current_week_dates = data.get('current_week', {}).get('display', '17.03 - 20.03.2025')
-    next_week_dates = data.get('next_week', {}).get('display', '22.03 - 28.03.2025')
+    current_week_dates = data.get('week_start', '').strftime('%d.%m') + ' - ' + data.get('week_end', '').strftime('%d.%m.%Y')
+    next_week_dates = (data.get('week_start', '') + timedelta(days=7)).strftime('%d.%m') + ' - ' + (data.get('week_end', '') + timedelta(days=7)).strftime('%d.%m.%Y')
     
     # Получаем примечания руководства
     notes = data.get('notes', [])
@@ -217,13 +194,16 @@ def add_shipment():
         else:
             formatted_date = ""
         
+        # Автоматически определяем день недели по дате
+        day_of_week = get_day_of_week(formatted_date) if formatted_date else request.form['day']
+        
         # Check which week we're adding shipment for
         is_next_week = request.form.get('week') == 'next'
         
         # Create new shipment
         new_shipment = {
             'id': next_id,
-            'day': request.form['day'],
+            'day': day_of_week,  # Используем определенный день недели
             'date': formatted_date,
             'destination': request.form['destination'],
             'volume': request.form['volume'],
@@ -256,17 +236,16 @@ def edit_shipment(id):
     
     # Find shipment by ID
     shipment = None
+    is_next_week = False
     for s in data['shipments']:
         if s['id'] == id:
             shipment = s
+            is_next_week = s.get('week') == 'next'
             break
     
-    if not shipment:
+    if shipment is None:
         flash('Отгрузка не найдена', 'danger')
         return redirect(url_for('index'))
-    
-    # Determine if shipment is for next week
-    is_next_week = shipment.get('week') == 'next'
     
     if request.method == 'POST':
         # Convert date from YYYY-MM-DD to DD.MM.YYYY
@@ -280,11 +259,14 @@ def edit_shipment(id):
         else:
             formatted_date = ""
         
+        # Автоматически определяем день недели по дате
+        day_of_week = get_day_of_week(formatted_date) if formatted_date else request.form['day']
+        
         # Check if week has changed
         new_is_next_week = request.form.get('week') == 'next'
         
         # Update shipment data
-        shipment['day'] = request.form['day']
+        shipment['day'] = day_of_week  # Используем определенный день недели
         shipment['date'] = formatted_date
         shipment['destination'] = request.form['destination']
         shipment['volume'] = request.form['volume']
@@ -343,9 +325,98 @@ def delete_shipment(id):
     return redirect(url_for('index'))
 
 @app.route('/api/shipments')
-def api_shipments():
-    data = load_data()
-    return jsonify(data)
+def get_shipments():
+    # Получаем данные о текущей и следующей неделе
+    current_week_by_day, next_week_by_day, days = load_shipments_by_day()
+    
+    # Подготавливаем данные для JSON-ответа
+    current_week = {}
+    next_week = {}
+    
+    # Счетчики для статистики
+    total_current_week_volume = 0
+    total_next_week_volume = 0
+    total_current_week_shipments = 0
+    total_next_week_shipments = 0
+    
+    for day in days:
+        # Текущая неделя
+        current_week[day] = current_week_by_day[day]
+        total_current_week_shipments += len(current_week_by_day[day])
+        
+        # Суммируем объемы
+        for shipment in current_week_by_day[day]:
+            if shipment.get('volume'):
+                try:
+                    volume_value = int(shipment['volume'].split(' ')[0])
+                    total_current_week_volume += volume_value
+                except (ValueError, IndexError):
+                    pass
+        
+        # Следующая неделя
+        next_week[day] = next_week_by_day[day]
+        total_next_week_shipments += len(next_week_by_day[day])
+        
+        # Суммируем объемы
+        for shipment in next_week_by_day[day]:
+            if shipment.get('volume'):
+                try:
+                    volume_value = int(shipment['volume'].split(' ')[0])
+                    total_next_week_volume += volume_value
+                except (ValueError, IndexError):
+                    pass
+    
+    return jsonify({
+        'days': days,
+        'currentWeek': current_week,
+        'nextWeek': next_week,
+        'stats': {
+            'totalCurrentWeekVolume': total_current_week_volume,
+            'totalNextWeekVolume': total_next_week_volume,
+            'totalVolume': total_current_week_volume + total_next_week_volume,
+            'totalCurrentWeekShipments': total_current_week_shipments,
+            'totalNextWeekShipments': total_next_week_shipments,
+            'totalShipments': total_current_week_shipments + total_next_week_shipments
+        }
+    })
+
+@app.route('/api/shipment-volumes')
+def get_shipment_volumes():
+    # Получаем данные о текущей и следующей неделе
+    current_week_by_day, next_week_by_day, days = load_shipments_by_day()
+    
+    # Рассчитываем объемы по дням недели
+    current_week_data = []
+    next_week_data = []
+    
+    for day in days[:5]:  # Только рабочие дни
+        # Текущая неделя
+        current_volume = 0
+        for shipment in current_week_by_day[day]:
+            if shipment.get('volume'):
+                try:
+                    volume_value = int(shipment['volume'].split(' ')[0])
+                    current_volume += volume_value
+                except (ValueError, IndexError):
+                    pass
+        current_week_data.append(current_volume)
+        
+        # Следующая неделя
+        next_volume = 0
+        for shipment in next_week_by_day[day]:
+            if shipment.get('volume'):
+                try:
+                    volume_value = int(shipment['volume'].split(' ')[0])
+                    next_volume += volume_value
+                except (ValueError, IndexError):
+                    pass
+        next_week_data.append(next_volume)
+    
+    return jsonify({
+        'days': ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница'],
+        'currentWeek': current_week_data,
+        'nextWeek': next_week_data
+    })
 
 @app.route('/add_note', methods=['POST'])
 def add_note():
@@ -402,6 +473,33 @@ def delete_note(id):
         flash('Примечание не найдено', 'danger')
     
     return redirect(url_for('index'))
+
+def load_shipments_by_day():
+    data = load_data()
+    shipments = data.get('shipments', [])
+    
+    # Разделяем отгрузки на текущую и следующую неделю
+    current_week_shipments = [s for s in shipments if s.get('week') != 'next']
+    next_week_shipments = [s for s in shipments if s.get('week') == 'next']
+    
+    # Дни недели для отображения (только рабочие дни с понедельника по четверг)
+    days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье']
+    
+    # Группируем отгрузки по дням недели
+    current_week_by_day = {day: [] for day in days}
+    next_week_by_day = {day: [] for day in days}
+    
+    for shipment in current_week_shipments:
+        day = shipment.get('day')
+        if day in days:
+            current_week_by_day[day].append(shipment)
+    
+    for shipment in next_week_shipments:
+        day = shipment.get('day')
+        if day in days:
+            next_week_by_day[day].append(shipment)
+    
+    return current_week_by_day, next_week_by_day, days
 
 if __name__ == '__main__':
     import argparse
