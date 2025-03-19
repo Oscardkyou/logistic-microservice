@@ -1,330 +1,1063 @@
 {% extends 'layout.html' %}
 
 {% block content %}
-  <h1 class="text-center mb-4">График отгрузок по регионам Казахстана</h1>
+  <div class="dashboard-container">
+    <h1 class="main-title">График отгрузок по регионам Казахстана</h1>
+    <p class="subtitle">Система планирования и отслеживания логистики</p>
 
-  <!-- Дашборд с общей статистикой -->
-  <div class="stats-panel mb-4">
-    <div class="stat-item">
-      <span class="stat-value" id="total-volume">0</span>
-      <span class="stat-label">Общий объем (тонн)</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-value" id="current-week-volume">0</span>
-      <span class="stat-label">Текущая неделя (тонн)</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-value" id="next-week-volume">0</span>
-      <span class="stat-label">Следующая неделя (тонн)</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-value" id="total-shipments">0</span>
-      <span class="stat-label">Всего отгрузок</span>
-    </div>
-  </div>
-
-  <!-- Навигация по неделям -->
-  <ul class="nav nav-tabs mb-4" id="weekTabs" role="tablist">
-    <li class="nav-item" role="presentation">
-      <button class="nav-link active" id="current-week-tab" data-bs-toggle="tab" data-bs-target="#current-week" type="button" role="tab" aria-controls="current-week" aria-selected="true">
-        Текущая неделя ({{ current_week_dates }})
-      </button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" id="next-week-tab" data-bs-toggle="tab" data-bs-target="#next-week" type="button" role="tab" aria-controls="next-week" aria-selected="false">
-        Следующая неделя ({{ next_week_dates }})
-      </button>
-    </li>
-  </ul>
-
-  <!-- Содержимое вкладок -->
-  <div class="tab-content" id="weekTabsContent">
-    <!-- Текущая неделя -->
-    <div class="tab-pane fade show active" id="current-week" role="tabpanel" aria-labelledby="current-week-tab">
-      <div class="d-flex justify-content-end mb-3">
-        <a href="{{ url_for('add_shipment') }}" class="btn btn-primary">
-          <i class="bi bi-plus-circle"></i> Добавить отгрузку
-        </a>
-      </div>
-
-      <div class="schedule-grid">
-        {% for day in days[:5] %}
-        <div class="day-card day-{{ day }}">
-          <div class="day-header">
-            <div class="day-name">{{ day }}</div>
-            <div class="day-date">
-              {% if day == 'Понедельник' %}
-                {{ current_week_dates.split(' - ')[0] }}
-              {% elif day == 'Вторник' %}
-                {{ (current_week_dates.split(' - ')[0]|int + 1)|string + current_week_dates.split(' - ')[0][2:] }}
-              {% elif day == 'Среда' %}
-                {{ (current_week_dates.split(' - ')[0]|int + 2)|string + current_week_dates.split(' - ')[0][2:] }}
-              {% elif day == 'Четверг' %}
-                {{ (current_week_dates.split(' - ')[0]|int + 3)|string + current_week_dates.split(' - ')[0][2:] }}
-              {% elif day == 'Пятница' %}
-                {{ current_week_dates.split(' - ')[1] }}
-              {% endif %}
-            </div>
-          </div>
-
-          <div class="day-content">
-            <div id="current-week-{{ day }}-shipments"></div>
-          </div>
+    <!-- Панель статистики -->
+    <div class="stats-panel">
+      <div class="stat-card total-volume">
+        <div class="stat-icon"><i class="bi bi-box-seam"></i></div>
+        <div class="stat-info">
+          <div class="stat-value" id="total-volume">{{ current_week_volume + next_week_volume }}</div>
+          <div class="stat-label">Общий объем (тонн)</div>
         </div>
-        {% endfor %}
       </div>
-    </div>
-
-    <!-- Следующая неделя -->
-    <div class="tab-pane fade" id="next-week" role="tabpanel" aria-labelledby="next-week-tab">
-      <div class="d-flex justify-content-end mb-3">
-        <a href="{{ url_for('add_shipment', week='next') }}" class="btn btn-primary">
-          <i class="bi bi-plus-circle"></i> Добавить отгрузку на следующую неделю
-        </a>
-      </div>
-
-      <div class="schedule-grid">
-        {% for day in days[:5] %}
-        <div class="day-card day-{{ day }}">
-          <div class="day-header">
-            <div class="day-name">{{ day }}</div>
-            <div class="day-date">
-              {% if day == 'Понедельник' %}
-                {{ next_week_dates.split(' - ')[0] }}
-              {% elif day == 'Вторник' %}
-                {{ (next_week_dates.split(' - ')[0]|int + 1)|string + next_week_dates.split(' - ')[0][2:] }}
-              {% elif day == 'Среда' %}
-                {{ (next_week_dates.split(' - ')[0]|int + 2)|string + next_week_dates.split(' - ')[0][2:] }}
-              {% elif day == 'Четверг' %}
-                {{ (next_week_dates.split(' - ')[0]|int + 3)|string + next_week_dates.split(' - ')[0][2:] }}
-              {% elif day == 'Пятница' %}
-                {{ next_week_dates.split(' - ')[1] }}
-              {% endif %}
-            </div>
-          </div>
-
-          <div class="day-content">
-            <div id="next-week-{{ day }}-shipments"></div>
-          </div>
+      <div class="stat-card current-week">
+        <div class="stat-icon"><i class="bi bi-calendar-week"></i></div>
+        <div class="stat-info">
+          <div class="stat-value" id="current-week-volume">{{ current_week_volume }}</div>
+          <div class="stat-label">Текущая неделя (тонн)</div>
         </div>
-        {% endfor %}
+      </div>
+      <div class="stat-card next-week">
+        <div class="stat-icon"><i class="bi bi-calendar-plus"></i></div>
+        <div class="stat-info">
+          <div class="stat-value" id="next-week-volume">{{ next_week_volume }}</div>
+          <div class="stat-label">Следующая неделя (тонн)</div>
+        </div>
+      </div>
+      <div class="stat-card shipment-count">
+        <div class="stat-icon"><i class="bi bi-truck"></i></div>
+        <div class="stat-info">
+          <div class="stat-value" id="total-shipments">{{ current_week_shipments|length + next_week_shipments|length }}</div>
+          <div class="stat-label">Всего отгрузок</div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Секция для примечаний и пожеланий руководства -->
-  {% if notes %}
-  <div class="notes-card mt-4">
-    <h5 class="notes-header">
-      <i class="bi bi-info-circle"></i> Примечания руководства
-    </h5>
-    <div class="notes-content">
-      <ul class="list-group list-group-flush">
-        {% for note in notes %}
-        <li class="list-group-item d-flex justify-content-between align-items-start">
-          <div class="ms-2 me-auto">
-            <div class="fw-bold">{{ note.author }} ({{ note.date }})</div>
-            {{ note.content|safe }}
-          </div>
-          <a href="{{ url_for('delete_note', id=note.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Вы уверены, что хотите удалить это примечание?');">
-            <i class="bi bi-trash"></i>
-          </a>
+    <!-- Вкладки недель с редактируемыми датами -->
+    <div class="week-tabs-container">
+      <ul class="nav nav-tabs" id="weekTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="current-week-tab" data-bs-toggle="tab" data-bs-target="#current-week" type="button" role="tab" aria-controls="current-week" aria-selected="true">
+            <i class="bi bi-calendar-week"></i> Текущая неделя
+            <span class="week-dates" id="current-week-dates" data-bs-toggle="tooltip" data-bs-title="Нажмите для изменения даты">
+              {{ current_week_dates }}
+            </span>
+          </button>
         </li>
-        {% endfor %}
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="next-week-tab" data-bs-toggle="tab" data-bs-target="#next-week" type="button" role="tab" aria-controls="next-week" aria-selected="false">
+            <i class="bi bi-calendar-plus"></i> Следующая неделя
+            <span class="week-dates" id="next-week-dates" data-bs-toggle="tooltip" data-bs-title="Нажмите для изменения даты">
+              {{ next_week_dates }}
+            </span>
+          </button>
+        </li>
       </ul>
     </div>
-    <div class="mt-3">
-      <a href="#" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addNoteModal">
-        <i class="bi bi-plus-circle"></i> Добавить примечание
-      </a>
-    </div>
-  </div>
-  {% endif %}
 
-<!-- График объемов по дням недели -->
-<div class="card mb-4">
-  <div class="card-body">
-    <h5 class="card-title">Объемы отгрузок по дням недели</h5>
-    <canvas id="volumeChart" height="100"></canvas>
-  </div>
-</div>
-
-  <!-- Модальное окно для добавления примечания -->
-  <div class="modal fade" id="addNoteModal" tabindex="-1" aria-labelledby="addNoteModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="addNoteModalLabel">Добавить примечание</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+    <!-- Содержимое вкладок -->
+    <div class="tab-content" id="weekTabsContent">
+      <!-- Текущая неделя -->
+      <div class="tab-pane fade show active" id="current-week" role="tabpanel" aria-labelledby="current-week-tab">
+        <div class="add-button-container">
+          <a href="{{ url_for('add_shipment') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Добавить отгрузку
+          </a>
         </div>
-        <form action="{{ url_for('add_note') }}" method="post">
-          <div class="modal-body">
-            <div class="mb-3">
-              <label for="author" class="form-label">Автор</label>
-              <input type="text" class="form-control" id="author" name="author" required>
+
+        <div class="schedule-container">
+          <!-- Рабочие дни (будни) -->
+          <div class="workdays-grid">
+            {% for day in days[:5] %}
+            <div class="day-card day-{{ day }}">
+              <div class="day-header">
+                <div class="day-name">{{ day }}</div>
+                <div class="day-date" id="current-{{ day }}-date">
+                  {% if day == 'Понедельник' %}
+                    {{ current_week_dates.split(' - ')[0] }}
+                  {% elif day == 'Вторник' %}
+                    {{ (current_week_dates.split(' - ')[0]|int + 1)|string + current_week_dates.split(' - ')[0][2:] }}
+                  {% elif day == 'Среда' %}
+                    {{ (current_week_dates.split(' - ')[0]|int + 2)|string + current_week_dates.split(' - ')[0][2:] }}
+                  {% elif day == 'Четверг' %}
+                    {{ (current_week_dates.split(' - ')[0]|int + 3)|string + current_week_dates.split(' - ')[0][2:] }}
+                  {% elif day == 'Пятница' %}
+                    {{ current_week_dates.split(' - ')[1] }}
+                  {% endif %}
+                </div>
+              </div>
+              <div class="day-content">
+                {% set shipments_for_day = current_week_by_day[day] %}
+                {% if shipments_for_day|length > 0 %}
+                  {% for shipment in shipments_for_day %}
+                  <div class="shipment-card {{ shipment.status }}">
+                    <div class="shipment-header">
+                      <div class="shipment-date"><i class="bi bi-calendar3"></i> {{ shipment.date }}</div>
+                      <div class="shipment-actions">
+                        <a href="{{ url_for('edit_shipment', id=shipment.id) }}" class="btn btn-sm btn-outline-primary">
+                          <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{{ url_for('delete_shipment', id=shipment.id) }}" class="btn btn-sm btn-outline-danger"
+                          onclick="return confirm('Вы уверены, что хотите удалить эту отгрузку?');">
+                          <i class="bi bi-trash"></i>
+                        </a>
+                      </div>
+                    </div>
+                    <div class="shipment-destination"><i class="bi bi-geo-alt"></i> {{ shipment.destination }}</div>
+                    <div class="shipment-volume"><i class="bi bi-box"></i> {{ shipment.volume }}</div>
+                    <div class="shipment-status">
+                      {% if shipment.status == 'confirmed' %}
+                        <span class="badge bg-success"><i class="bi bi-check-circle"></i> Подтверждено</span>
+                      {% else %}
+                        <span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> Ожидается</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                  {% endfor %}
+                {% else %}
+                  <div class="no-shipments">
+                    <i class="bi bi-inbox"></i> Отгрузки не запланированы
+                  </div>
+                {% endif %}
+              </div>
             </div>
-            <div class="mb-3">
-              <label for="content" class="form-label">Содержание</label>
-              <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Следующая неделя -->
+      <div class="tab-pane fade" id="next-week" role="tabpanel" aria-labelledby="next-week-tab">
+        <div class="add-button-container">
+          <a href="{{ url_for('add_shipment', week='next') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Добавить отгрузку на следующую неделю
+          </a>
+        </div>
+
+        <div class="schedule-container">
+          <!-- Рабочие дни (будни) -->
+          <div class="workdays-grid">
+            {% for day in days[:5] %}
+            <div class="day-card day-{{ day }}">
+              <div class="day-header">
+                <div class="day-name">{{ day }}</div>
+                <div class="day-date" id="next-{{ day }}-date">
+                  {% if day == 'Понедельник' %}
+                    {{ next_week_dates.split(' - ')[0] }}
+                  {% elif day == 'Вторник' %}
+                    {{ (next_week_dates.split(' - ')[0]|int + 1)|string + next_week_dates.split(' - ')[0][2:] }}
+                  {% elif day == 'Среда' %}
+                    {{ (next_week_dates.split(' - ')[0]|int + 2)|string + next_week_dates.split(' - ')[0][2:] }}
+                  {% elif day == 'Четверг' %}
+                    {{ (next_week_dates.split(' - ')[0]|int + 3)|string + next_week_dates.split(' - ')[0][2:] }}
+                  {% elif day == 'Пятница' %}
+                    {{ next_week_dates.split(' - ')[1] }}
+                  {% endif %}
+                </div>
+              </div>
+              <div class="day-content">
+                {% set shipments_for_day = next_week_by_day[day] %}
+                {% if shipments_for_day|length > 0 %}
+                  {% for shipment in shipments_for_day %}
+                  <div class="shipment-card {{ shipment.status }}">
+                    <div class="shipment-header">
+                      <div class="shipment-date"><i class="bi bi-calendar3"></i> {{ shipment.date }}</div>
+                      <div class="shipment-actions">
+                        <a href="{{ url_for('edit_shipment', id=shipment.id) }}" class="btn btn-sm btn-outline-primary">
+                          <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{{ url_for('delete_shipment', id=shipment.id) }}" class="btn btn-sm btn-outline-danger"
+                          onclick="return confirm('Вы уверены, что хотите удалить эту отгрузку?');">
+                          <i class="bi bi-trash"></i>
+                        </a>
+                      </div>
+                    </div>
+                    <div class="shipment-destination"><i class="bi bi-geo-alt"></i> {{ shipment.destination }}</div>
+                    <div class="shipment-volume"><i class="bi bi-box"></i> {{ shipment.volume }}</div>
+                    <div class="shipment-status">
+                      {% if shipment.status == 'confirmed' %}
+                        <span class="badge bg-success"><i class="bi bi-check-circle"></i> Подтверждено</span>
+                      {% else %}
+                        <span class="badge bg-warning text-dark"><i class="bi bi-clock"></i> Ожидается</span>
+                      {% endif %}
+                    </div>
+                  </div>
+                  {% endfor %}
+                {% else %}
+                  <div class="no-shipments">
+                    <i class="bi bi-inbox"></i> Отгрузки не запланированы
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Секция примечаний -->
+    <div class="notes-section">
+      <div class="notes-header">
+        <h3><i class="bi bi-journal-text"></i> Примечания руководства</h3>
+        <button class="btn btn-primary add-note-btn" data-bs-toggle="modal" data-bs-target="#addNoteModal">
+          <i class="bi bi-plus-circle"></i> Добавить примечание
+        </button>
+      </div>
+      <div class="notes-body">
+        {% if notes %}
+        {% for note in notes %}
+        <div class="note-item">
+          <div class="note-header">
+            <div class="note-author"><i class="bi bi-person-circle"></i> {{ note.author }}</div>
+            <div class="note-date">{{ note.date }}</div>
+          </div>
+          <div class="note-content">{{ note.content|safe }}</div>
+          <div class="note-actions">
+            <a href="{{ url_for('delete_note', id=note.id) }}" class="btn btn-sm btn-outline-danger"
+              onclick="return confirm('Вы уверены, что хотите удалить это примечание?');">
+              <i class="bi bi-trash"></i> Удалить
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="no-notes">
+          <i class="bi bi-journal"></i>
+          <p>Нет примечаний. Добавьте первое примечание, нажав кнопку выше.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- График объемов отгрузок -->
+    <div class="chart-container">
+      <h5 class="chart-title"><i class="bi bi-bar-chart-line"></i> Объемы отгрузок по дням недели</h5>
+      <canvas id="volumeChart" height="150"></canvas>
+    </div>
+
+    <!-- Модальное окно для редактирования дат -->
+    <div class="modal fade" id="editDatesModal" tabindex="-1" aria-labelledby="editDatesModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editDatesModalLabel"><i class="bi bi-calendar-range"></i> Изменить даты</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group mb-3">
+              <label for="weekStartDate" class="form-label">Дата начала недели (понедельник)</label>
+              <input type="date" class="form-control" id="weekStartDate">
+            </div>
+            <div class="form-group mb-3">
+              <label for="weekEndDate" class="form-label">Дата окончания недели (пятница)</label>
+              <input type="date" class="form-control" id="weekEndDate">
+            </div>
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle"></i> Даты субботы и воскресенья будут рассчитаны автоматически.
             </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <button type="button" class="btn btn-primary" id="saveDatesBtn">
+              <i class="bi bi-save"></i> Сохранить
+            </button>
           </div>
-        </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Модальное окно для добавления примечания -->
+    <div class="modal fade" id="addNoteModal" tabindex="-1" aria-labelledby="addNoteModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addNoteModalLabel"><i class="bi bi-journal-plus"></i> Добавить примечание</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+          </div>
+          <form action="{{ url_for('add_note') }}" method="post">
+            <div class="modal-body">
+              <div class="mb-3">
+                <label for="author" class="form-label">Автор</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-person"></i></span>
+                  <input type="text" class="form-control" id="author" name="author" required>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="content" class="form-label">Содержание</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="bi bi-chat-left-text"></i></span>
+                  <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+              <button type="submit" class="btn btn-primary">
+                <i class="bi bi-save"></i> Сохранить
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </div>
 {% endblock %}
 
+{% block styles %}
+<style>
+  /* Общие стили */
+  .dashboard-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .main-title {
+    color: #2c3e50;
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+    text-align: center;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+  }
+
+  .subtitle {
+    color: #7f8c8d;
+    text-align: center;
+    margin-bottom: 25px;
+    font-weight: 300;
+  }
+
+  /* Панель статистики */
+  .stats-panel {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+  }
+
+  .stat-card {
+    display: flex;
+    align-items: center;
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+  }
+
+  .stat-card.total-volume { border-left: 5px solid #3498db; }
+  .stat-card.current-week { border-left: 5px solid #2ecc71; }
+  .stat-card.next-week { border-left: 5px solid #9b59b6; }
+  .stat-card.shipment-count { border-left: 5px solid #e74c3c; }
+
+  .stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin-right: 15px;
+    font-size: 24px;
+    color: white;
+  }
+
+  .total-volume .stat-icon { background-color: #3498db; }
+  .current-week .stat-icon { background-color: #2ecc71; }
+  .next-week .stat-icon { background-color: #9b59b6; }
+  .shipment-count .stat-icon { background-color: #e74c3c; }
+
+  .stat-info {
+    flex: 1;
+  }
+
+  .stat-value {
+    display: block;
+    font-size: 28px;
+    font-weight: 700;
+    color: #2c3e50;
+  }
+
+  .stat-label {
+    display: block;
+    font-size: 14px;
+    color: #7f8c8d;
+  }
+
+  /* График */
+  .chart-container {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 30px 0;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+
+  .chart-title {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+  }
+
+  /* Вкладки недель */
+  .week-tabs-container {
+    margin-bottom: 20px;
+  }
+
+  .nav-tabs {
+    border-bottom: 2px solid #dee2e6;
+    margin-bottom: 20px;
+  }
+
+  .nav-tabs .nav-link {
+    margin-bottom: -2px;
+    border: none;
+    color: #6c757d;
+    padding: 10px 20px;
+    font-weight: 500;
+    border-radius: 0;
+    transition: all 0.3s ease;
+  }
+
+  .nav-tabs .nav-link:hover {
+    color: #3498db;
+    background-color: rgba(52, 152, 219, 0.05);
+  }
+
+  .nav-tabs .nav-link.active {
+    color: #3498db;
+    border-bottom: 3px solid #3498db;
+  }
+
+  .week-dates {
+    color: #3498db;
+    font-size: 0.9em;
+    font-weight: normal;
+    background: rgba(52, 152, 219, 0.1);
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .week-dates:hover {
+    background: rgba(52, 152, 219, 0.2);
+  }
+
+  /* Кнопка добавления */
+  .add-button-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 15px;
+  }
+
+  .add-button-container .btn {
+    padding: 8px 16px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    transform: translateY(0);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  }
+
+  /* Контейнер для расписания */
+  .schedule-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  /* Сетка для будних дней */
+  .workdays-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 15px;
+  }
+
+  /* Стили карточек дней */
+  .day-card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.05);
+  }
+
+  .day-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+  }
+
+  .day-header {
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+  }
+
+  .day-Понедельник .day-header { background: linear-gradient(135deg, #3498db, #2980b9); }
+  .day-Вторник .day-header { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+  .day-Среда .day-header { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+  .day-Четверг .day-header { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+  .day-Пятница .day-header { background: linear-gradient(135deg, #f39c12, #d35400); }
+  .day-Суббота .day-header { background: linear-gradient(135deg, #34495e, #2c3e50); }
+  .day-Воскресенье .day-header { background: linear-gradient(135deg, #95a5a6, #7f8c8d); }
+
+  /* Стиль для выходных дней */
+  .day-card.weekend {
+    border: 2px dashed #ddd;
+  }
+
+  .day-name {
+    font-weight: 600;
+    font-size: 18px;
+  }
+
+  .day-date {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #2c3e50;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .day-content {
+    padding: 15px;
+    flex-grow: 1;
+    overflow-y: auto;
+    max-height: 350px;
+  }
+
+  /* Карточки отгрузок */
+  .shipment-card {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border-left: 4px solid #ddd;
+  }
+
+  .shipment-card:last-child {
+    margin-bottom: 0;
+  }
+
+  .shipment-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+  }
+
+  .shipment-card.confirmed {
+    border-left-color: #2ecc71;
+  }
+
+  .shipment-card.pending {
+    border-left-color: #f39c12;
+  }
+
+  .shipment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+
+  .shipment-date {
+    font-size: 14px;
+    color: #7f8c8d;
+  }
+
+  .shipment-actions {
+    display: flex;
+    gap: 5px;
+  }
+
+  .shipment-destination {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 8px;
+    color: #2c3e50;
+  }
+
+  .shipment-volume {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 15px;
+    background-color: #e9ecef;
+    font-size: 14px;
+    color: #2c3e50;
+    margin-bottom: 8px;
+  }
+
+  .shipment-status {
+    margin-top: 5px;
+  }
+
+  .no-shipments {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100px;
+    color: #95a5a6;
+    font-style: italic;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  /* Секция примечаний */
+  .notes-section {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    margin: 30px 0;
+    overflow: hidden;
+    border-left: 5px solid #3498db;
+  }
+
+  .notes-header {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f8f9fa;
+  }
+
+  .notes-header h3 {
+    margin: 0;
+    color: #2c3e50;
+    font-weight: 600;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .notes-header h3 i {
+    color: #3498db;
+    font-size: 1.8rem;
+  }
+
+  .add-note-btn {
+    padding: 10px 20px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  
+  .add-note-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+  }
+
+  .notes-body {
+    padding: 20px;
+  }
+
+  .note-item {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    border-left: 3px solid #3498db;
+  }
+
+  .note-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .note-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.12);
+  }
+
+  .note-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+
+  .note-author {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .note-author i {
+    color: #3498db;
+  }
+
+  .note-date {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    background-color: #e9ecef;
+    padding: 4px 10px;
+    border-radius: 15px;
+  }
+
+  .note-content {
+    margin-bottom: 15px;
+    line-height: 1.6;
+    color: #34495e;
+  }
+  
+  .note-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .no-notes {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    color: #95a5a6;
+    font-style: italic;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    text-align: center;
+  }
+  
+  .no-notes i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    color: #bdc3c7;
+  }
+  
+  .no-notes p {
+    font-size: 1.1rem;
+    margin: 0;
+  }
+
+  /* Модальное окно */
+  .modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #eee;
+  }
+
+  .modal-title {
+    color: #2c3e50;
+    font-weight: 600;
+  }
+
+  .input-group-text {
+    background-color: #f8f9fa;
+  }
+
+  /* Адаптивность для мобильных */
+  @media (max-width: 992px) {
+    .schedule-container {
+      grid-template-columns: 1fr;
+    }
+
+    .weekend-grid {
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: auto;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .stats-panel {
+      grid-template-columns: 1fr;
+    }
+
+    .workdays-grid,
+    .weekend-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .main-title {
+      font-size: 1.8rem;
+    }
+
+    .nav-tabs .nav-link {
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+
+    .week-dates {
+      display: block;
+      margin-top: 5px;
+      margin-left: 0;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block scripts %}
-<!-- Подключаем Chart.js для графика -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<!-- Используем AJAX для загрузки данных с API -->
 <script>
-  // Базовые URL-адреса для действий
-  const editShipmentUrl = "{{ url_for('edit_shipment', id=0) }}".slice(0, -1); // Удаляем последний символ '0'
-  const deleteShipmentUrl = "{{ url_for('delete_shipment', id=0) }}".slice(0, -1); // Удаляем последний символ '0'
-
-  // Глобальные переменные для данных графика
-  let currentWeekVolumeData = [];
-  let nextWeekVolumeData = [];
-  let daysLabels = [];
-  let days = [];
-
-  // Загружаем данные с API
-  function loadChartData() {
-    fetch('/api/shipment-volumes')
-      .then(response => response.json())
-      .then(data => {
-        // Сохраняем данные в глобальные переменные
-        daysLabels = data.days;
-        currentWeekVolumeData = data.currentWeek;
-        nextWeekVolumeData = data.nextWeek;
-
-        // Инициализируем график
-        initVolumeChart(currentWeekVolumeData, nextWeekVolumeData);
-      })
-      .catch(error => console.error('Ошибка загрузки данных графика:', error));
-  }
-
-  // Загружаем данные для таблицы
-  function loadShipmentsData() {
-    fetch('/api/shipments')
-      .then(response => response.json())
-      .then(data => {
-        // Сохраняем список дней
-        days = data.days;
-
-        // Обновляем статистику
-        updateStats(data.stats);
-
-        // Обновляем таблицу
-        updateShipmentsTable(data);
-      })
-      .catch(error => console.error('Ошибка загрузки данных отгрузок:', error));
-  }
-
-  // Обновляем статистику
-  function updateStats(stats) {
-    document.getElementById('total-volume').textContent = stats.totalVolume;
-    document.getElementById('current-week-volume').textContent = stats.totalCurrentWeekVolume;
-    document.getElementById('next-week-volume').textContent = stats.totalNextWeekVolume;
-    document.getElementById('total-shipments').textContent = stats.totalShipments;
-  }
-
-  // Обновляем таблицу
-  function updateShipmentsTable(data) {
-    // Обновляем таблицу для текущей недели
-    for (let day of days) {
-      let shipments = data.currentWeek[day];
-      let html = '';
-      if (shipments && shipments.length > 0) {
-        for (let shipment of shipments) {
-          html += `
-            <div class="shipment ${shipment.status}">
-              <div class="shipment-header">
-                <div class="date">${shipment.date}</div>
-                <div class="actions">
-                  <a href="${editShipmentUrl}${shipment.id}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Редактировать">
-                    <i class="bi bi-pencil"></i>
-                  </a>
-                  <a href="${deleteShipmentUrl}${shipment.id}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Вы уверены, что хотите удалить эту отгрузку?');" data-bs-toggle="tooltip" title="Удалить">
-                    <i class="bi bi-trash"></i>
-                  </a>
-                </div>
-              </div>
-              <div class="destination">${shipment.destination}</div>
-              <div class="volume">${shipment.volume}</div>
-              <div class="status">
-                ${shipment.status === 'confirmed' ? '<span class="badge bg-success">✓ Подтверждено</span>' : '<span class="badge bg-warning text-dark">⏳ Ожидается</span>'}
-              </div>
-            </div>
-          `;
-        }
-      } else {
-        html = '<div class="no-shipments">Отгрузки не запланированы</div>';
-      }
-
-      const container = document.getElementById(`current-week-${day}-shipments`);
-      if (container) {
-        container.innerHTML = html;
-      }
-    }
-
-    // Обновляем таблицу для следующей недели
-    for (let day of days) {
-      let shipments = data.nextWeek[day];
-      let html = '';
-      if (shipments && shipments.length > 0) {
-        for (let shipment of shipments) {
-          html += `
-            <div class="shipment ${shipment.status}">
-              <div class="shipment-header">
-                <div class="date">${shipment.date}</div>
-                <div class="actions">
-                  <a href="${editShipmentUrl}${shipment.id}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="Редактировать">
-                    <i class="bi bi-pencil"></i>
-                  </a>
-                  <a href="${deleteShipmentUrl}${shipment.id}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Вы уверены, что хотите удалить эту отгрузку?');" data-bs-toggle="tooltip" title="Удалить">
-                    <i class="bi bi-trash"></i>
-                  </a>
-                </div>
-              </div>
-              <div class="destination">${shipment.destination}</div>
-              <div class="volume">${shipment.volume}</div>
-              <div class="status">
-                ${shipment.status === 'confirmed' ? '<span class="badge bg-success">✓ Подтверждено</span>' : '<span class="badge bg-warning text-dark">⏳ Ожидается</span>'}
-              </div>
-            </div>
-          `;
-        }
-      } else {
-        html = '<div class="no-shipments">Отгрузки не запланированы</div>';
-      }
-
-      const container = document.getElementById(`next-week-${day}-shipments`);
-      if (container) {
-        container.innerHTML = html;
-      }
-    }
-
-    // Переинициализируем тултипы после обновления DOM
-    initTooltips();
-  }
-
-  // При загрузке страницы
   document.addEventListener('DOMContentLoaded', function() {
-    // Загружаем данные для графика
-    loadChartData();
+    // Инициализация тултипов
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
 
-    // Загружаем данные для таблицы
-    loadShipmentsData();
+    // Переменные для хранения модальных окон
+    const editDatesModal = new bootstrap.Modal(document.getElementById('editDatesModal'));
+
+    // Текущая активная вкладка (current или next)
+    let activeWeekTab = 'current';
+
+    // Обработчики клика по датам недели для их редактирования
+    document.getElementById('current-week-dates').addEventListener('click', function() {
+      activeWeekTab = 'current';
+      document.getElementById('editDatesModalLabel').innerHTML = '<i class="bi bi-calendar-range"></i> Изменить даты текущей недели';
+      prepareDateEditModal('current');
+      editDatesModal.show();
+    });
+
+    document.getElementById('next-week-dates').addEventListener('click', function() {
+      activeWeekTab = 'next';
+      document.getElementById('editDatesModalLabel').innerHTML = '<i class="bi bi-calendar-range"></i> Изменить даты следующей недели';
+      prepareDateEditModal('next');
+      editDatesModal.show();
+    });
+
+    // Функция подготовки модального окна для редактирования дат
+    function prepareDateEditModal(weekType) {
+      // Получение текущих значений дат
+      const datesText = document.getElementById(weekType + '-week-dates').innerText;
+      const [startDateStr, endDateStr] = datesText.split(' - ');
+
+      // Разбор дат для установки в input
+      const startParts = startDateStr.split('.');
+      const endParts = endDateStr.split('.');
+
+      // Преобразование в формат YYYY-MM-DD для input type="date"
+      const startDateForInput = `${endParts[2]}-${startParts[1]}-${startParts[0]}`;
+      const endDateForInput = `${endParts[2]}-${endParts[1]}-${endParts[0]}`;
+
+      // Установка значений в поля формы
+      document.getElementById('weekStartDate').value = startDateForInput;
+      document.getElementById('weekEndDate').value = endDateForInput;
+    }
+
+    // Обработчик нажатия на кнопку "Сохранить" в модальном окне редактирования дат
+    document.getElementById('saveDatesBtn').addEventListener('click', function() {
+      const startDate = new Date(document.getElementById('weekStartDate').value);
+      const endDate = new Date(document.getElementById('weekEndDate').value);
+
+      // Проверка корректности дат
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        alert('Пожалуйста, выберите корректные даты');
+        return;
+      }
+
+      // Проверка, что конечная дата не раньше начальной
+      if (endDate < startDate) {
+        alert('Дата окончания недели не может быть раньше даты начала');
+        return;
+      }
+
+      // Проверка, что startDate - понедельник, а endDate - пятница
+      if (startDate.getDay() !== 1) {
+        alert('Дата начала недели должна быть понедельником');
+        return;
+      }
+
+      if (endDate.getDay() !== 5) {
+        alert('Дата окончания недели должна быть пятницей');
+        return;
+      }
+
+      // Форматирование дат
+      const formattedStartDate = formatDate(startDate);
+      const formattedEndDate = formatDate(endDate);
+
+      // Обновление отображаемых дат в интерфейсе
+      updateDatesInUI(activeWeekTab, formattedStartDate, formattedEndDate);
+
+      // Закрытие модального окна
+      editDatesModal.hide();
+    });
+
+    // Функция форматирования даты в формат DD.MM.YYYY
+    function formatDate(date) {
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}.${month}.${year}`;
+    }
+
+    // Функция обновления дат в интерфейсе
+    function updateDatesInUI(weekType, startDateStr, endDateStr) {
+      // Обновление заголовка вкладки
+      document.getElementById(weekType + '-week-dates').innerText = startDateStr + ' - ' + endDateStr;
+
+      // Базовые даты
+      const startParts = startDateStr.split('.');
+      const endParts = endDateStr.split('.');
+
+      // Обновление дат для каждого дня недели
+      const daysOfWeek = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
+
+      // Установка дат для будних дней
+      document.getElementById(`${weekType}-Понедельник-date`).innerText = startDateStr;
+
+      // Вычисление дат для вторника, среды и четверга
+      const startDay = parseInt(startParts[0]);
+      document.getElementById(`${weekType}-Вторник-date`).innerText = `${(startDay + 1).toString().padStart(2, '0')}.${startParts[1]}.${startParts[2]}`;
+      document.getElementById(`${weekType}-Среда-date`).innerText = `${(startDay + 2).toString().padStart(2, '0')}.${startParts[1]}.${startParts[2]}`;
+      document.getElementById(`${weekType}-Четверг-date`).innerText = `${(startDay + 3).toString().padStart(2, '0')}.${startParts[1]}.${startParts[2]}`;
+
+      // Установка даты для пятницы
+      document.getElementById(`${weekType}-Пятница-date`).innerText = endDateStr;
+
+      // Вычисление дат для выходных
+      const endDay = parseInt(endParts[0]);
+      document.getElementById(`${weekType}-Суббота-date`).innerText = `${(endDay + 1).toString().padStart(2, '0')}.${endParts[1]}.${endParts[2]}`;
+      document.getElementById(`${weekType}-Воскресенье-date`).innerText = `${(endDay + 2).toString().padStart(2, '0')}.${endParts[1]}.${endParts[2]}`;
+    }
+
+    // Инициализация графика
+    const ctx = document.getElementById('volumeChart').getContext('2d');
+
+    // Данные для графика
+    const days = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
+
+    // Расчет объемов по дням недели
+    const currentWeekVolumes = [
+      {% for day in days %}
+        {% set day_total = 0 %}
+        {% for shipment in current_week_by_day[day] %}
+          {% if shipment.volume %}
+            {% set volume_str = shipment.volume.split(' ')[0] %}
+            {% if volume_str.isdigit() %}
+              {% set day_total = day_total + volume_str|int %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        {{ day_total }}{% if not loop.last %},{% endif %}
+      {% endfor %}
+    ];
+
+    const nextWeekVolumes = [
+      {% for day in days %}
+        {% set day_total = 0 %}
+        {% for shipment in next_week_by_day[day] %}
+          {% if shipment.volume %}
+            {% set volume_str = shipment.volume.split(' ')[0] %}
+            {% if volume_str.isdigit() %}
+              {% set day_total = day_total + volume_str|int %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        {{ day_total }}{% if not loop.last %},{% endif %}
+      {% endfor %}
+    ];
+
+    // Создание графика
+    const volumeChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: days,
+        datasets: [
+          {
+            label: 'Текущая неделя',
+            data: currentWeekVolumes,
+            backgroundColor: 'rgba(52, 152, 219, 0.7)',
+            borderColor: 'rgba(52, 152, 219, 1)',
+            borderWidth: 1,
+            borderRadius: 5,
+            barPercentage: 0.7,
+          },
+          {
+            label: 'Следующая неделя',
+            data: nextWeekVolumes,
+            backgroundColor: 'rgba(155, 89, 182, 0.7)',
+            borderColor: 'rgba(155, 89, 182, 1)',
+            borderWidth: 1,
+            borderRadius: 5,
+            barPercentage: 0.7,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: {
+              usePointStyle: true,
+              padding: 20
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            padding: 10
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Объем (тонн)',
+              font: {
+                weight: 'bold'
+              }
+            },
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)'
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
+        },
+        animation: {
+          duration: 2000,
+          easing: 'easeOutQuart'
+        }
+      }
+    });
   });
 </script>
-
-<!-- Подключаем наш JavaScript файл с функциями -->
-<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
 {% endblock %}
